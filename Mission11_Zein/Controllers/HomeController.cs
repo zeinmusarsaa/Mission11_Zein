@@ -1,32 +1,46 @@
 using Microsoft.AspNetCore.Mvc;
 using Mission11_Zein.Models;
+using Mission11_Zein.Models.ViewModels;
 using System.Diagnostics;
 
 namespace Mission11_Zein.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
+        private IBookRepository _bookRepo;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(IBookRepository temp)
         {
-            _logger = logger;
+            _bookRepo = temp;
         }
 
-        public IActionResult Index()
+        public IActionResult Index(int pageNum)
         {
-            return View();
-        }
 
-        public IActionResult Privacy()
-        {
-            return View();
-        }
+            int pageSize = 10;
 
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
-        {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            var categories = _bookRepo.Books
+                .Select(b => b.Category)
+                .Distinct()
+                .OrderBy(c => c);
+
+            var blah = new BookListViewModels
+            {
+                Books = _bookRepo.Books
+                .OrderBy(x => x.Title)
+                .Skip((pageNum - 1) * pageSize)
+                .Take(pageSize),
+
+                PaginationInfo = new PaginationInfo
+                {
+                    CurrentPage = pageNum,
+                    ItemsPerPage = pageSize,
+                    TotalItems = _bookRepo.Books.Count()
+                },
+
+                Categories = categories
+            };
+            return View(blah);
         }
     }
 }
