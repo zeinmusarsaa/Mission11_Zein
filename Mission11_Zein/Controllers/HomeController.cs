@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Mission11_Zein.Models;
 using Mission11_Zein.Models.ViewModels;
-using System.Diagnostics;
+using System.Linq;
 
 namespace Mission11_Zein.Controllers
 {
@@ -14,32 +14,36 @@ namespace Mission11_Zein.Controllers
             _bookRepo = temp;
         }
 
-        public IActionResult Index(int pageNum)
+        public IActionResult Index(int pageNum = 1, string category = null)
         {
-
             int pageSize = 10;
 
-            var categories = _bookRepo.Books
-                .Select(b => b.Category)
-                .Distinct()
-                .OrderBy(c => c);
+            IQueryable<Book> bookQuery = _bookRepo.Books;
+            if (!string.IsNullOrEmpty(category))
+            {
+                bookQuery = bookQuery.Where(b => b.Category == category);
+            }
 
             var blah = new BookListViewModels
             {
-                Books = _bookRepo.Books
-                .OrderBy(x => x.Title)
-                .Skip((pageNum - 1) * pageSize)
-                .Take(pageSize),
+                Books = bookQuery
+                    .OrderBy(x => x.Title)
+                    .Skip((pageNum - 1) * pageSize)
+                    .Take(pageSize),
 
                 PaginationInfo = new PaginationInfo
                 {
                     CurrentPage = pageNum,
                     ItemsPerPage = pageSize,
-                    TotalItems = _bookRepo.Books.Count()
+                    TotalItems = bookQuery.Count()
                 },
 
-                Categories = categories
+                Categories = _bookRepo.Books
+                    .Select(b => b.Category)
+                    .Distinct()
+                    .OrderBy(c => c)
             };
+
             return View(blah);
         }
     }

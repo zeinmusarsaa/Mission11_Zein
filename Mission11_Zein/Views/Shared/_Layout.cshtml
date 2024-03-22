@@ -29,12 +29,16 @@
             <div class="col-3">
                 <!-- Add filtering options here -->
                 <div class="list-group">
-                    <a href="#" class="list-group-item list-group-item-action active" aria-current="true">
-                        Categories
+                    <a href="@Url.Action("Index", new { pageNum = 1, category = (string)null })"
+                       class="list-group-item list-group-item-action">
+                        All Categories
                     </a>
                     @foreach (var category in Model.Categories)
                     {
-                        <a href="#" class="list-group-item list-group-item-action">@category</a>
+                        <a href="@Url.Action("Index", new { pageNum = 1, category = category })"
+                           class="list-group-item list-group-item-action">
+                            @category
+                        </a>
                     }
                 </div>
             </div>
